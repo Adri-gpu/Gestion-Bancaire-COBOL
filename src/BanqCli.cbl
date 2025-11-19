@@ -4,12 +4,14 @@
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
-           SELECT F-CLIENTS ASSIGN TO "data/CLIENTS.dat"
-                  ORGANIZATION IS SEQUENTIAL
-                  ACCESS MODE  IS SEQUENTIAL
-                  FILE STATUS  IS WS-FS-CLIENTS.
+           SELECT F-CLIENTS
+               ASSIGN TO "../data/CLIENTS.dat"
+               ORGANIZATION IS INDEXED
+               ACCESS MODE IS DYNAMIC
+               RECORD KEY IS NUM-CLIENT
+               FILE STATUS IS WS-FS-CLIENTS.
 
-           SELECT F-PARAM   ASSIGN TO "data/PARAM.dat"
+           SELECT F-PARAM   ASSIGN TO "../data/PARAM.dat"
                   ORGANIZATION IS SEQUENTIAL
                   ACCESS MODE  IS SEQUENTIAL
                   FILE STATUS  IS WS-FS-PARAM.
@@ -17,8 +19,10 @@
        DATA DIVISION.
        FILE SECTION.
 
-       FD  F-CLIENTS.
-       COPY "Client.cpy".
+       FD  F-CLIENTS
+           RECORD CONTAINS 126 CHARACTERS.
+       01  CLIENT-REC.
+           COPY "Client.cpy".
 
        FD  F-PARAM.
        COPY "Param.cpy".
@@ -41,7 +45,14 @@
               STOP RUN
            END-IF
 
-           OPEN EXTEND F-CLIENTS
+           OPEN I-O F-CLIENTS
+           IF WS-FS-CLIENTS = "35"
+              OPEN OUTPUT F-CLIENTS
+              CLOSE F-CLIENTS
+           
+              OPEN I-O F-CLIENTS
+           END-IF
+           
            IF WS-FS-CLIENTS NOT = "00"
               DISPLAY "ERREUR OUVERTURE CLIENTS.DAT : " WS-FS-CLIENTS
               CLOSE F-PARAM

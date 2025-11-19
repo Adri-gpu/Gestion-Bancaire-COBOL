@@ -34,8 +34,10 @@
 
        DATA DIVISION.
        FILE SECTION.
-       FD  F-CLIENTS.
-       COPY "Client.cpy".
+       FD  F-CLIENTS
+           RECORD CONTAINS 126 CHARACTERS
+           DATA RECORD IS CLIENT-REC.
+           COPY "Client.cpy".
 
        FD  F-COMPTES.
        COPY "Compte.cpy".
@@ -63,7 +65,10 @@
 
            IF WS-FS-CLIENTS NOT = "00"
               DISPLAY "ERREUR CREATION CLIENTS, FS=" WS-FS-CLIENTS
+              STOP RUN
            END-IF
+
+           CLOSE F-CLIENTS
 
            MOVE 0 TO PRM-DERNIER-ID-CLIENT
                     PRM-DERNIER-ID-COMPTE
