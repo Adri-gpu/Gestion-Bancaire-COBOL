@@ -19,10 +19,12 @@
        01  CLIENT-REC.
            COPY "Client.cpy".
 
-       WORKING-STORAGE SECTION.
+              WORKING-STORAGE SECTION.
        01  WS-FS-CLIENTS      PIC XX  VALUE SPACES.
        01  WS-REPONSE         PIC X   VALUE SPACE.
        01  WS-CLI-RECH        PIC X(6) VALUE SPACES.
+       01  WS-CHOIX           PIC X   VALUE " ".
+       01  WS-NB-CLIENTS      PIC 9(4) VALUE 0.
 
        PROCEDURE DIVISION.
        MAIN-SECTION.
@@ -34,33 +36,90 @@
               STOP RUN
            END-IF
 
-           PERFORM JUSQUA-FIN-CONSULT
+           PERFORM BOUCLE-MENU
 
            CLOSE F-CLIENTS
 
            STOP RUN.
-           
-       *>----------------------------------------------------*
-       *> Boucle de consultation                             *
-       *>----------------------------------------------------*
-       JUSQUA-FIN-CONSULT.
-           PERFORM UNTIL WS-REPONSE = "N" OR WS-REPONSE = "n"
+       
+       BOUCLE-MENU.
+           PERFORM UNTIL WS-CHOIX = "3"
+              DISPLAY " "
+              DISPLAY "========================================"
+              DISPLAY "      MENU CONSULTATION CLIENTS"
+              DISPLAY "========================================"
+              DISPLAY "  1 - Consulter un client par numero"
+              DISPLAY "  2 - Lister tous les clients"
+              DISPLAY "  3 - Quitter"
+              DISPLAY "Votre choix : "
+              ACCEPT WS-CHOIX
 
-              MOVE SPACES TO WS-CLI-RECH
-              DISPLAY "----------------------------------------"
-              DISPLAY "Numero de client a consulter (ex: C00001) : "
-              ACCEPT WS-CLI-RECH
-
-              IF WS-CLI-RECH = SPACES
-                 MOVE "N" TO WS-REPONSE
-              ELSE
-                 PERFORM CONSULTER-UN-CLIENT
-
-                 DISPLAY "Voulez-vous consulter un autre client ? (O/N) : "
-                 ACCEPT WS-REPONSE
-              END-IF
-
+              EVALUATE WS-CHOIX
+                 WHEN "1"
+                    PERFORM DEMANDER-ET-CONSULTER-CLIENT
+                 WHEN "2"
+                    PERFORM LISTER-TOUS-LES-CLIENTS
+                 WHEN "3"
+                    DISPLAY "Fin du programme."
+                 WHEN OTHER
+                    DISPLAY "Choix invalide, merci de recommencer."
+              END-EVALUATE
            END-PERFORM
+           .
+
+       DEMANDER-ET-CONSULTER-CLIENT.
+           MOVE SPACES TO WS-CLI-RECH
+
+           DISPLAY "----------------------------------------"
+           DISPLAY "Numero de client a consulter (ex: C00001) : "
+           ACCEPT WS-CLI-RECH
+
+           IF WS-CLI-RECH NOT = SPACES
+              PERFORM CONSULTER-UN-CLIENT
+           ELSE
+              DISPLAY "Numero vide, retour au menu."
+           END-IF
+           .
+
+       AFFICHER-CLIENT.
+           DISPLAY "  Numero : " NUM-CLIENT
+           DISPLAY "  Nom    : " NOM-CLIENT
+           DISPLAY "  Prenom : " PRENOM-CLIENT
+           DISPLAY "  Adresse: " ADRESSE-CLIENT
+           DISPLAY "  CP     : " CP-CLIENT
+           DISPLAY "  Ville  : " VILLE-CLIENT
+           DISPLAY "----------------------------------------"
+           .
+
+       LISTER-TOUS-LES-CLIENTS.
+           DISPLAY " "
+           DISPLAY "========== LISTE DES CLIENTS =========="
+
+           MOVE 0      TO WS-NB-CLIENTS
+           MOVE "00"   TO WS-FS-CLIENTS
+
+           *> Repositionner le fichier sur la premiere cle
+           MOVE SPACES TO NUM-CLIENT
+
+           START F-CLIENTS KEY >= NUM-CLIENT
+                INVALID KEY
+                   DISPLAY "Aucun client dans le fichier."
+                   EXIT PARAGRAPH
+           .
+
+           PERFORM UNTIL WS-FS-CLIENTS = "10"
+              READ F-CLIENTS NEXT RECORD
+                 AT END
+                    MOVE "10" TO WS-FS-CLIENTS
+                 NOT AT END
+                    ADD 1 TO WS-NB-CLIENTS
+                    PERFORM AFFICHER-CLIENT
+              END-READ
+           END-PERFORM
+
+           IF WS-NB-CLIENTS > 0
+              DISPLAY "====== FIN DE LA LISTE DES CLIENTS ======"
+           END-IF
            .
 
        *>----------------------------------------------------*
