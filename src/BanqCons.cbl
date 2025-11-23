@@ -25,11 +25,12 @@
        01  WS-CLI-RECH        PIC X(6) VALUE SPACES.
        01  WS-CHOIX           PIC X   VALUE " ".
        01  WS-NB-CLIENTS      PIC 9(4) VALUE 0.
+       01  WS-CONFIRM         PIC X   VALUE SPACE.
 
        PROCEDURE DIVISION.
        MAIN-SECTION.
 
-           OPEN INPUT F-CLIENTS
+           OPEN I-O F-CLIENTS
 
            IF WS-FS-CLIENTS NOT = "00"
               DISPLAY "ERREUR OUVERTURE CLIENTS.DAT : " WS-FS-CLIENTS
@@ -43,14 +44,15 @@
            STOP RUN.
        
        BOUCLE-MENU.
-           PERFORM UNTIL WS-CHOIX = "3"
+           PERFORM UNTIL WS-CHOIX = "4"
               DISPLAY " "
               DISPLAY "========================================"
               DISPLAY "      MENU CONSULTATION CLIENTS"
               DISPLAY "========================================"
               DISPLAY "  1 - Consulter un client par numero"
               DISPLAY "  2 - Lister tous les clients"
-              DISPLAY "  3 - Quitter"
+              DISPLAY "  3 - Supprimer un client"
+              DISPLAY "  4 - Quitter"
               DISPLAY "Votre choix : "
               ACCEPT WS-CHOIX
 
@@ -60,6 +62,8 @@
                  WHEN "2"
                     PERFORM LISTER-TOUS-LES-CLIENTS
                  WHEN "3"
+                    PERFORM SUPPRIMER-UN-CLIENT
+                 WHEN "4"
                     DISPLAY "Fin du programme."
                  WHEN OTHER
                     DISPLAY "Choix invalide, merci de recommencer."
@@ -141,6 +145,47 @@
                    DISPLAY "  CP     : " CP-CLIENT
                    DISPLAY "  Ville  : " VILLE-CLIENT
            END-READ
+           .
+
+       SUPPRIMER-UN-CLIENT.
+           MOVE SPACES TO WS-CLI-RECH
+
+           DISPLAY "----------------------------------------"
+           DISPLAY "Numero de client a supprimer (ex: C00001) : "
+           ACCEPT WS-CLI-RECH
+
+           IF WS-CLI-RECH = SPACES
+              DISPLAY "Numero vide, retour au menu."
+              EXIT PARAGRAPH
+           END-IF
+
+           MOVE WS-CLI-RECH TO NUM-CLIENT
+
+           READ F-CLIENTS
+                KEY IS NUM-CLIENT
+                INVALID KEY
+                   DISPLAY "Client " WS-CLI-RECH " introuvable."
+                   EXIT PARAGRAPH
+                NOT INVALID KEY
+                   DISPLAY "Client trouve : "
+                   PERFORM AFFICHER-CLIENT
+           END-READ
+
+           DISPLAY "Confirmez la suppression (O/N) : "
+           ACCEPT WS-CONFIRM
+
+           IF WS-CONFIRM NOT = "O" AND WS-CONFIRM NOT = "o"
+              DISPLAY "Suppression annulee."
+              EXIT PARAGRAPH
+           END-IF
+
+           DELETE F-CLIENTS RECORD
+
+           IF WS-FS-CLIENTS = "00"
+              DISPLAY "Client " NUM-CLIENT " supprime."
+           ELSE
+              DISPLAY "Erreur suppression client : " WS-FS-CLIENTS
+           END-IF
            .
        
        END PROGRAM BANQCONS.
