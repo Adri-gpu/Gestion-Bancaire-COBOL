@@ -35,18 +35,21 @@
        DATA DIVISION.
        FILE SECTION.
        FD  F-CLIENTS
-           RECORD CONTAINS 126 CHARACTERS
-           DATA RECORD IS CLIENT-REC.
+           RECORD CONTAINS 126 CHARACTERS.
+       01  CLIENT-REC.
            COPY "Client.cpy".
 
        FD  F-COMPTES.
-       COPY "Compte.cpy".
+       01  COMPTE-REC.
+           COPY "Compte.cpy".
 
        FD  F-OPERATIONS.
-       COPY "Operation.cpy".
+       01  OPERATION-REC.
+           COPY "Operation.cpy".
 
        FD  F-PARAM.
-       COPY "Param.cpy".
+       01  PARAM-REC.
+           COPY "Param.cpy".
 
        WORKING-STORAGE SECTION.
        01  WS-FS-CLIENTS     PIC X(2).
@@ -68,18 +71,16 @@
               STOP RUN
            END-IF
 
-           CLOSE F-CLIENTS
-
-           MOVE 0 TO PRM-DERNIER-ID-CLIENT
-                    PRM-DERNIER-ID-COMPTE
-                    PRM-DERNIER-ID-OPR.
-
-           WRITE PARAM-FILE-REC.
+           MOVE 0 TO PRM-DERNIER-ID-CLIENT IN PARAM-REC
+           MOVE 0 TO PRM-DERNIER-ID-COMPTE IN PARAM-REC
+           MOVE 0 TO PRM-DERNIER-ID-OPR IN PARAM-REC
 
            CLOSE F-CLIENTS
                  F-COMPTES
                  F-OPERATIONS
                  F-PARAM.
+
+           WRITE PARAM-REC
 
            DISPLAY "INITIALISATION TERMINEE.".
            STOP RUN.

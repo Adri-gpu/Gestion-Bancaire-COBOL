@@ -1,7 +1,6 @@
       *>----------------------------------------------------*
       *> Definition de l'enregistrement OPERATION           *
       *>----------------------------------------------------*
-       01  OPERATION-REC.
            05 OPR-ID          PIC 9(8).
            05 OPR-NUM-COMPTE  PIC X(10).
            05 OPR-DATE        PIC 9(8).

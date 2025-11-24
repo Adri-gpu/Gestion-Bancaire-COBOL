@@ -1,7 +1,6 @@
       *>----------------------------------------------------*
       *> Definition de l'enregistrement COMPTE              *
       *>----------------------------------------------------*
-       01  COMPTE-REC.
            05 CPT-NUM-COMPTE        PIC X(10).
            05 CPT-NUM-CLIENT        PIC X(6).
            05 CPT-TYPE-COMPTE       PIC X(2).
